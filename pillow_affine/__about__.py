@@ -1,0 +1,7 @@
+__name__ = "pillow_affine"
+__description__ = "Affine transformation utilities for pillow "
+__version__ = "0.1.dev0"
+__url__ = "https://github.com/pmeier/pillow_affine"
+__license__ = "BSD-3"
+__author__ = "Philip Meier"
+__author_email__ = "github.pmeier@posteo.de"
