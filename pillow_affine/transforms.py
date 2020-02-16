@@ -155,7 +155,7 @@ class Scale(ElementaryTransform):
     def __init__(
         self,
         factor: Union[float, Tuple[float, float]],
-        center: Optional[Tuple[float, float]],
+        center: Optional[Tuple[float, float]] = None,
     ):
         self.factor = factor
         self.center = center
