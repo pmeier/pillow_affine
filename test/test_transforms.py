@@ -2,7 +2,6 @@ from typing import Tuple
 from os import path
 import unittest
 from pyimagetest import ImageTestcase
-import numpy as np
 from pillow_affine import transforms
 
 
@@ -33,7 +32,7 @@ class Tester(ImageTestcase, unittest.TestCase):
         # http://www.r0k.us/graphics/kodak/kodim15.html
         # and is cleared for unrestricted usage
         here = path.abspath(path.dirname(__file__))
-        return path.join(here, "test_image.png")
+        return path.join(here, "..", "images", "raw.png")
 
     def test_rotate(self):
         image = self.load_image("PIL")
