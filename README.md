@@ -22,6 +22,8 @@ transform_params = transform.extract_transform_params(image.size)
 image.transform(*transform_params)
 ```
 
+Similar to `image.rotate()`, `transform.extract_transform_params()` provides an `expand` flag, which if `True` enlarges the image to hold the complete motif. Be aware that this centers the motif and thus any final translation is removed.
+
 ## Coordinate System
 
 | ATTENTION: `pillow_affine` uses a different, presumably more intuitive, coordinate system than `Pillow`. |
@@ -114,4 +116,17 @@ transform2 = ComposedTransform(
 ```
 
 ![](images/composed_1.png "Scale(2.0)") ![](images/composed_2.png "Scale((0.3, 1.0))") 
+
+### `Expand`
+
+```python
+from pillow_affine import Shear
+
+transform = Shear(30.0)
+transform_params1 = transform.extract_transform_params(size)
+transform_params2 = transform.extract_transform_params(size, expand=True)
+
+```
+
+![](images/shear.png "Shear(30.0) with expand=False") ![](images/shear_expand.png "Shear(30.0) with expand=True") 
 

@@ -22,19 +22,28 @@ __all__ = [
 ]
 
 
+def calculate_image_center(size: Tuple[int, int]) -> Tuple[float, float]:
+    width, height = size
+    horz_center = width / 2.0
+    vert_center = height / 2.0
+    return horz_center, vert_center
+
+
 class AffineTransform(ABC):
     @abstractmethod
     def create_matrix(self, size: Tuple[int, int]) -> np.ndarray:
         pass
 
     def extract_transform_params(
-        self, size: Tuple[int, int], expand: bool = False,
+        self, size: Tuple[int, int], expand: bool = False
     ) -> Tuple[Tuple[int, int], int, Tuple[int, int, int, int, int, int]]:
         transform_matrix = self.create_matrix(size)
         verify_matrix(transform_matrix)
 
         if expand:
-            expanded_size, transform_matrix = self._expand_canvas()
+            expanded_size, transform_matrix = self._expand_canvas(
+                size, transform_matrix
+            )
         else:
             expanded_size = size
 
@@ -45,8 +54,44 @@ class AffineTransform(ABC):
         return expanded_size, Image.AFFINE, data
 
     @staticmethod
-    def _expand_canvas() -> Tuple[Tuple[int, int], np.ndarray]:
-        raise RuntimeError
+    def _expand_canvas(
+        size: Tuple[int, int], transform_matrix: np.ndarray
+    ) -> Tuple[Tuple[int, int], np.ndarray]:
+        def calculate_motif_vertices(transform_matrix: np.ndarray) -> np.ndarray:
+            width, height = size
+            image_vertices = np.array(
+                (
+                    # fmt:off
+                    (0.0, width,    0.0, width),
+                    (0.0,   0.0, height, height),
+                    # fmt:on
+                )
+            )
+            image_vertices = np.concatenate((image_vertices, np.ones((1, 4))))
+            return np.matmul(transform_matrix, image_vertices)[:-1, :]
+
+        def calculate_expanded_size(motif_vertices: np.ndarray) -> Tuple[int, int]:
+            left_bottom_vertex = np.floor(np.min(motif_vertices, axis=1))
+            right_top_vertex = np.ceil(np.max(motif_vertices, axis=1))
+            expanded_size = right_top_vertex - left_bottom_vertex
+            return tuple(expanded_size.astype(np.int).tolist())
+
+        def recenter_motif(
+            expanded_size: Tuple[int, int], transform_matrix: np.ndarray
+        ) -> np.ndarray:
+            matrix = left_matmuls(
+                translation_matrix(calculate_image_center(size), inverse=True),
+                translation_matrix(calculate_image_center(expanded_size)),
+            )
+            # TODO: Investigate and document why this extra step is needed
+            matrix = AffineTransform._coordinate_transform(size, matrix)
+            return left_matmuls(transform_matrix, matrix)
+
+        motif_vertices = calculate_motif_vertices(transform_matrix)
+        expanded_size = calculate_expanded_size(motif_vertices)
+        transform_matrix = recenter_motif(expanded_size, transform_matrix)
+
+        return expanded_size, transform_matrix
 
     @staticmethod
     def _coordinate_transform(
@@ -84,13 +129,6 @@ class ElementaryTransform(AffineTransform):
 
     def extra_repr(self) -> str:
         return ""
-
-
-def calculate_image_center(size: Tuple[int, int]) -> Tuple[float, float]:
-    width, height = size
-    horz_center = width / 2.0
-    vert_center = height / 2.0
-    return horz_center, vert_center
 
 
 class Shear(ElementaryTransform):

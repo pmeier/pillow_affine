@@ -41,6 +41,11 @@ def create_shear_images(image):
     transform_params = transform.extract_transform_params(image.size)
     image.transform(*transform_params).save(file)
 
+    file = "shear_expand.png"
+    transform = Shear(angle)
+    transform_params = transform.extract_transform_params(image.size, expand=True)
+    image.transform(*transform_params).save(file)
+
 
 def create_rotate_images(image):
     angle = 30.0

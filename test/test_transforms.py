@@ -28,9 +28,6 @@ def convert_translation(
 class Tester(ImageTestcase, unittest.TestCase):
     @property
     def default_test_image_file(self) -> str:
-        # The test image was downloaded from
-        # http://www.r0k.us/graphics/kodak/kodim15.html
-        # and is cleared for unrestricted usage
         here = path.abspath(path.dirname(__file__))
         return path.join(here, "..", "images", "raw.png")
 
@@ -114,6 +111,19 @@ class Tester(ImageTestcase, unittest.TestCase):
         angle = convert_angle(angle)
         translate = convert_translation(translation)
         desired = image.rotate(angle, translate=translate)
+
+        self.assertImagesAlmostEqual(actual, desired)
+
+    def test_expand(self):
+        image = self.load_image("PIL")
+        angle = 30.0
+        expand = True
+
+        transform = transforms.Rotate(angle)
+        transform_params = transform.extract_transform_params(image.size, expand=expand)
+        actual = image.transform(*transform_params)
+
+        desired = image.rotate(convert_angle(angle), expand=expand)
 
         self.assertImagesAlmostEqual(actual, desired)
 
