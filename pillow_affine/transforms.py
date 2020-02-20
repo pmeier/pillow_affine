@@ -74,7 +74,8 @@ class AffineTransform(ABC):
             left_bottom_vertex = np.floor(np.min(motif_vertices, axis=1))
             right_top_vertex = np.ceil(np.max(motif_vertices, axis=1))
             expanded_size = right_top_vertex - left_bottom_vertex
-            return tuple(expanded_size.astype(np.int).tolist())
+            expanded_width, expanded_height = expanded_size.astype(np.int)
+            return expanded_width, expanded_height
 
         def recenter_motif(
             expanded_size: Tuple[int, int], transform_matrix: np.ndarray
@@ -106,12 +107,13 @@ class AffineTransform(ABC):
         transform_matrix: np.ndarray,
     ) -> Tuple[int, int, int, int, int, int]:
         inv_transform_params = inv(transform_matrix)[:-1, :]
-        return tuple(inv_transform_params.reshape(6).tolist())
+        a, b, c, d, e, f = inv_transform_params.reshape(6)
+        return a, b, c, d, e, f
 
     @staticmethod
     def _transform_around_point(
-        point: Tuple[float, float], transform_matrix: np.array
-    ) -> np.array:
+        point: Tuple[float, float], transform_matrix: np.ndarray
+    ) -> np.ndarray:
         return left_matmuls(
             translation_matrix(point, inverse=True),
             transform_matrix,
@@ -208,11 +210,17 @@ class Scale(ElementaryTransform):
         return matrix
 
     def extra_repr(self) -> str:
+        def format_factor(factor: float) -> str:
+            return f"{factor:.2f}"
+
+        extras = []
         if isinstance(self.factor, float):
-            factor = round(self.factor, 2)
+            extras.append(format_factor(self.factor))
         else:
-            factor = tuple([round(coord_factor, 2) for coord_factor in self.factor])
-        extras = [str(factor)]
+            horz_factor, vert_factor = [
+                format_factor(dim_factor) for dim_factor in self.factor
+            ]
+            extras.append(f"({horz_factor}, {vert_factor})")
         if self.center is not None:
             extras.append(f"center={self.center}")
         return ", ".join(extras)

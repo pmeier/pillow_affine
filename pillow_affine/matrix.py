@@ -60,7 +60,7 @@ def rotation_matrix(angle: float, clockwise: bool = False) -> np.ndarray:
     return np.array(matrix)
 
 
-def scaling_matrix(factor: Union[float, Tuple[float, float]]) -> np.array:
+def scaling_matrix(factor: Union[float, Tuple[float, float]]) -> np.ndarray:
     if isinstance(factor, float):
         factor_horz = factor_vert = factor
     else:
@@ -71,7 +71,7 @@ def scaling_matrix(factor: Union[float, Tuple[float, float]]) -> np.array:
 
 def translation_matrix(
     translation: Tuple[float, float], inverse: bool = False
-) -> np.array:
+) -> np.ndarray:
     horz_translation, vert_translation = translation
     if inverse:
         horz_translation *= -1.0
