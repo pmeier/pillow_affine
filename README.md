@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/pmeier/pillow_affine.svg?branch=master)](https://travis-ci.org/pmeier/pillow_affine) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Build Status](https://travis-ci.org/pmeier/pillow_affine.svg?branch=master)](https://travis-ci.org/pmeier/pillow_affine) [![codecov](https://codecov.io/gh/pmeier/pillow_affine/branch/master/graph/badge.svg)](https://codecov.io/gh/pmeier/pillow_affine) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # pillow_affine
 
