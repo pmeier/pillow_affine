@@ -20,17 +20,20 @@ def left_matmuls(*matrices: np.ndarray) -> np.ndarray:
 
 def verify_matrix(matrix: np.ndarray, eps: float = 1e-6) -> None:
     if not isinstance(matrix, np.ndarray):
-        # TODO: add message
-        raise RuntimeError
+        msg = f"Matrix should be an np.ndarray, but got {type(matrix)} instead."
+        raise RuntimeError(msg)
     elif matrix.dtype not in (np.half, np.single, np.double, np.longdouble):
-        # TODO: add message
-        raise RuntimeError
+        msg = f"Matrix dtype should be floating-point, but got {matrix.dtype} instead."
+        raise RuntimeError(msg)
     elif matrix.shape != (3, 3):
-        # TODO: add message
-        raise RuntimeError
+        msg = f"Matrix shape should be (3, 3), but got {matrix.shape} instead."
+        raise RuntimeError(msg)
     elif norm(matrix[-1, :] - np.array((0.0, 0.0, 1.0))) > eps:
-        # TODO: add message
-        raise RuntimeError
+        msg = (
+            f"The last row of the matrix should be (0.0, 0.0, 1.0), "
+            f"but got {tuple(matrix[-1, :].tolist())} instead."
+        )
+        raise RuntimeError(msg)
 
 
 def shearing_matrix(angle: float, clockwise: bool = False) -> np.ndarray:

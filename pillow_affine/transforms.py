@@ -236,8 +236,8 @@ class Translate(ElementaryTransform):
 class ComposedTransform(AffineTransform):
     def __init__(self, *transforms: AffineTransform) -> None:
         if len(transforms) == 0:
-            # TODO: add error message
-            raise RuntimeError
+            msg = "A ComposedTransform must comprise at least one other transform."
+            raise RuntimeError(msg)
         self.transforms = transforms
 
     def create_matrix(self, size: Tuple[int, int]) -> np.ndarray:
