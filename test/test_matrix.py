@@ -27,7 +27,7 @@ class Tester(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             verify_matrix(matrix)
 
-        matrix = np.ones(3)
+        matrix = np.ones((3, 3))
         with self.assertRaises(RuntimeError):
             verify_matrix(matrix)
 
