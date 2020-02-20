@@ -97,7 +97,11 @@ class Tester(ImageTestcase, unittest.TestCase):
 
         self.assertImagesAlmostEqual(actual, desired)
 
-    def test_affine(self):
+    def test_empty_composed(self):
+        with self.assertRaises(RuntimeError):
+            transforms.ComposedTransform()
+
+    def test_composed(self):
         image = self.load_image("PIL")
         angle = 30.0
         translation = (100.0, 50.0)
