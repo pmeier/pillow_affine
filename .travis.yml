@@ -8,11 +8,10 @@ matrix:
       install: skip
       script: black --check .
     - name: "Type checks"
-      before install: pip install mypy numpy git+https://github.com/numpy/numpy-stubs
-      install: pip install .
+      install: pip install .[type_check]
       script: mypy --config-file=mypy.ini pillow_affine/
     - name: "Tests"
-      before_install: pip install pytest coverage codecov
-      install: pip install .[testing]
+      before_install: pip install coverage codecov
+      install: pip install .[test]
       script: coverage run -m pytest test/
       after success: codecov

@@ -12,7 +12,24 @@ with open(path.join(here, "README.md"), "r") as fh:
 
 install_requires = ("pillow", "numpy")
 
-extras_require = {"testing": ("pyimagetest",)}
+type_check_requires = (
+    "mypy",
+    # FIXME: change this before release, since this does not work
+    "numpy-stubs@https://github.com/numpy/numpy-stubs/archive/master.zip",
+)
+
+test_requires = (
+    "pytest",
+    "pyimagetest",
+)
+
+dev_requires = (*type_check_requires, *test_requires)
+
+extras_require = {
+    "type_check": type_check_requires,
+    "test": test_requires,
+    "dev": dev_requires,
+}
 
 classifiers = (
     "Development Status :: 3 - Beta",
