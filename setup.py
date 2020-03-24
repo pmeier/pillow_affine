@@ -10,13 +10,9 @@ with open(path.join(here, "pillow_affine", "__about__.py"), "r") as fh:
 with open(path.join(here, "README.md"), "r") as fh:
     long_description = fh.read()
 
-install_requires = ("pillow",)
+install_requires = ("Pillow",)
 
-type_check_requires = (
-    "mypy",
-    # FIXME: change this before release, since this does not work
-    "numpy-stubs@https://github.com/numpy/numpy-stubs/archive/master.zip",
-)
+type_check_requires = ("mypy",)
 
 test_requires = (
     "pytest",
@@ -40,7 +36,7 @@ extras_require = {
 }
 
 classifiers = (
-    "Development Status :: 3 - Beta",
+    "Development Status :: 4 - Beta",
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering",
@@ -56,7 +52,7 @@ setup(
     author_email=about["__author_email__"],
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=find_packages(exclude=("test",)),
+    packages=find_packages(where=here, exclude=("docs", "test", "third_party_stubs")),
     install_requires=install_requires,
     extras_require=extras_require,
     python_requires=">=3.6",

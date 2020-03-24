@@ -42,13 +42,13 @@ def matmul(matrix1: Matrix, matrix2: Matrix) -> Matrix:
 
     Args:
         matrix1: Parameters :math:`a_1`, :math:`b_1`, :math:`c_1`, :math:`d_1`,
-            :math:`e_1`, :math:`f_1`
+            :math:`e_1`, :math:`f_1`.
         matrix2: Parameters :math:`a_2`, :math:`b_2`, :math:`c_2`, :math:`d_2`,
-            :math:`e_2`, :math:`f_2`
+            :math:`e_2`, :math:`f_2`.
 
     Returns:
         Parameters :math:`a`, :math:`b`, :math:`c`, :math:`d`, :math:`e`,
-        :math:`f`
+        :math:`f`.
     """
     a1, b1, c1, d1, e1, f1 = matrix1
     a2, b2, c2, d2, e2, f2 = matrix2
@@ -97,11 +97,11 @@ def left_matmuls(*matrices: Matrix) -> Matrix:
 
     Args:
         *matrices: Parameters :math:`a_n`, :math:`b_n`, :math:`c_n`, :math:`d_n`,
-            :math:`e_n`, :math:`f_n` of each matrix
+            :math:`e_n`, :math:`f_n` of each matrix.
 
     Returns:
         Parameters :math:`a`, :math:`b`, :math:`c`, :math:`d`, :math:`e`,
-        :math:`f`
+        :math:`f`.
     """
     return reduce(lambda matrix1, matrix2: matmul(matrix2, matrix1), matrices)
 
@@ -125,11 +125,11 @@ def matinv(matrix: Matrix) -> Matrix:
 
     Args:
         matrix: Parameters :math:`a`, :math:`b`, :math:`c`, :math:`d`, :math:`e`,
-            :math:`f`
+            :math:`f`.
 
     Returns:
         Parameters :math:`a^\prime`, :math:`b^\prime`, :math:`c^\prime`,
-        :math:`d^\prime`, :math:`e^\prime`, :math:`f^\prime`
+        :math:`d^\prime`, :math:`e^\prime`, :math:`f^\prime`.
     """
     a, b, c, d, e, f = matrix
 
@@ -148,10 +148,10 @@ def deg2rad(angle_in_deg: float) -> float:
     """Converts an angle from degrees to radians
 
     Args:
-        angle_in_deg: Angle in degrees
+        angle_in_deg: Angle in degrees.
 
     Returns:
-        Angle in radians
+        Angle in radians.
     """
     factor = pi / 180.0
     # FIXME: remove module operation
@@ -182,12 +182,12 @@ def transform_coordinate(coordinate: Coordinate, matrix: Matrix) -> Coordinate:
         \end{pmatrix}
 
     Args:
-        coordinate: Coordinate (:math:`x`, :math:`y`)
+        coordinate: Coordinate (:math:`x`, :math:`y`).
         matrix: Affine parameters :math:`a`, :math:`b`, :math:`c`, :math:`d`,
-            :math:`e`, :math:`f`
+            :math:`e`, :math:`f`.
 
     Returns:
-        Transformed coordinate (:math:`x^\prime`, :math:`y^\prime`)
+        Transformed coordinate (:math:`x^\prime`, :math:`y^\prime`).
     """
     x, y = coordinate
     a, b, c, d, e, f = matrix

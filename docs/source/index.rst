@@ -8,7 +8,7 @@ Welcome to pillow_affine's documentation!
 
   from PIL import Image
 
-  image = Image.new("L", (512, 512), color=255)
+  image = Image.open(...)
   image.transform(image.size, Image.AFFINE, data=None)
 
 the ``data`` parameter is not well documented. Even if you are familiar with

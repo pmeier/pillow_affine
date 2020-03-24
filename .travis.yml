@@ -3,10 +3,6 @@ python: "3.6"
 
 matrix:
   include:
-    - name: "Format"
-      before_install: pip install black
-      install: skip
-      script: black --check .
     - name: "Type checks"
       install: pip install .[type_check]
       script: mypy --config-file=mypy.ini pillow_affine/

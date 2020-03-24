@@ -26,10 +26,10 @@ def calculate_image_center(size: Size) -> Coordinate:
     """Calculates the center of an image
 
     Args:
-        size: Image size (width, height)
+        size: Image size (width, height).
 
     Returns:
-        Image center
+        Image center.
     """
     width, height = size
     horz_center = width / 2.0
@@ -63,7 +63,7 @@ class AffineTransform(ABC):
             transformed_image = image.transform(*transform_params)
 
         Args:
-            size: Image size (width, height)
+            size: Image size (width, height).
             expand: If ``True``, expands the canvas to hold the complete
                 transformed motif. Defaults to ``False``.
 
@@ -74,6 +74,7 @@ class AffineTransform(ABC):
         Returns:
             ``size``, ``method``, and ``data`` parameters for
             `Image.transform() <https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.transform>`_
+             .
         """
         transform_matrix = self._create_matrix(size)
 
@@ -320,7 +321,7 @@ class ComposedTransform(AffineTransform):
         transformed_image = image.transform(*transform_params)
 
     Args:
-        transforms: Individual :class:`AffineTransform` s
+        transforms: Individual :class:`AffineTransform` s.
     """
 
     def __init__(self, *transforms: AffineTransform) -> None:

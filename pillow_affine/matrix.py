@@ -29,13 +29,13 @@ def shearing_matrix(angle: float, clockwise: bool = False) -> Matrix:
         \end{pmatrix}
 
     Args:
-        angle: Angle :math:`\varphi` in degrees
+        angle: Angle :math:`\varphi` in degrees.
         clockwise: If ``True``, the shearing will be performed clockwise.
             Defaults to ``False``.
 
     Returns:
         Parameters :math:`a`, :math:`b`, :math:`c`, :math:`d`, :math:`e`,
-        :math:`f`
+        :math:`f`.
     """
     angle = deg2rad(angle)
     if clockwise:
@@ -62,13 +62,13 @@ def rotation_matrix(angle: float, clockwise: bool = False) -> Matrix:
         \end{pmatrix}
 
     Args:
-        angle: Angle :math:`\varphi` in degrees
+        angle: Angle :math:`\varphi` in degrees.
         clockwise: If ``True``, the rotation will be performed clockwise.
             Defaults to ``False``.
 
     Returns:
         Parameters :math:`a`, :math:`b`, :math:`c`, :math:`d`, :math:`e`,
-        :math:`f`
+        :math:`f`.
     """
     angle = deg2rad(angle)
     if clockwise:
@@ -101,7 +101,7 @@ def scaling_matrix(factor: Union[float, Tuple[float, float]]) -> Matrix:
 
     Returns:
         Parameters :math:`a`, :math:`b`, :math:`c`, :math:`d`, :math:`e`,
-        :math:`f`
+        :math:`f`.
     """
     if isinstance(factor, float):
         factor_horz = factor_vert = factor
@@ -129,14 +129,14 @@ def translation_matrix(translation: Coordinate, inverse: bool = False) -> Matrix
         \end{pmatrix}
 
     Args:
-        translation: Horizontal and vertical translation
+        translation: Horizontal and vertical translation.
             (:math:`t_\text{horz}`, :math:`t_\text{vert}`)
         inverse: If ``True``, the translation will be performed in the opposite
             direction. Defaults to ``False``.
 
     Returns:
         Parameters :math:`a`, :math:`b`, :math:`c`, :math:`d`, :math:`e`,
-        :math:`f`
+        :math:`f`.
     """
     horz_translation, vert_translation = translation
     if inverse:
