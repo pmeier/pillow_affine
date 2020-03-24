@@ -2,7 +2,7 @@ from typing import Tuple
 from os import path
 import unittest
 import re
-from pyimagetest import ImageTestcase
+from pyimagetest import ImageTestCase
 from pillow_affine import transforms
 
 
@@ -26,11 +26,13 @@ def convert_translation(
     return translate
 
 
-class Tester(ImageTestcase, unittest.TestCase):
-    @property
-    def default_test_image_file(self) -> str:
+class Tester(ImageTestCase):
+    def default_image_file(self) -> str:
         here = path.abspath(path.dirname(__file__))
         return path.join(here, "..", "images", "raw.png")
+
+    def default_image_backend(self):
+        return "PIL"
 
     def assertIsIdentityTransform(self, transform):
         _, _, actuals = transform.extract_transform_params((1, 1))
@@ -100,7 +102,7 @@ class Tester(ImageTestcase, unittest.TestCase):
         self.assertIsIdentityTransform(transform)
 
     def test_Rotate(self):
-        image = self.load_image("PIL")
+        image = self.load_image()
         angle = 30.0
 
         transform = transforms.Rotate(angle)
@@ -113,7 +115,7 @@ class Tester(ImageTestcase, unittest.TestCase):
         self.assertHasValidElementaryTransformRepr(transform, special_chars="°")
 
     def test_Rotate_clockwise(self):
-        image = self.load_image("PIL")
+        image = self.load_image()
         angle = 30.0
         clockwise = True
 
@@ -127,7 +129,7 @@ class Tester(ImageTestcase, unittest.TestCase):
         self.assertHasValidElementaryTransformRepr(transform, special_chars="°")
 
     def test_Rotate_off_image_center(self):
-        image = self.load_image("PIL")
+        image = self.load_image()
         angle = 30.0
         image_center = transforms.calculate_image_center(image.size)
         center = (image_center[0] - 50.0, image_center[1] + 100.0)
@@ -186,7 +188,7 @@ class Tester(ImageTestcase, unittest.TestCase):
         self.assertIsIdentityTransform(transform)
 
     def test_Translate(self):
-        image = self.load_image("PIL")
+        image = self.load_image()
         translation = (100.0, 50.0)
 
         transform = transforms.Translate(translation)
@@ -199,7 +201,7 @@ class Tester(ImageTestcase, unittest.TestCase):
         self.assertHasValidElementaryTransformRepr(transform)
 
     def test_Translate_inverse(self):
-        image = self.load_image("PIL")
+        image = self.load_image()
         translation = (100.0, 50.0)
         inverse = True
 
@@ -219,7 +221,7 @@ class Tester(ImageTestcase, unittest.TestCase):
             transforms.ComposedTransform()
 
     def test_ComposedTransform(self):
-        image = self.load_image("PIL")
+        image = self.load_image()
         angle = 30.0
         translation = (100.0, 50.0)
 
@@ -236,7 +238,7 @@ class Tester(ImageTestcase, unittest.TestCase):
         self.assertImagesAlmostEqual(actual, desired)
 
     def test_expand(self):
-        image = self.load_image("PIL")
+        image = self.load_image()
         angle = 30.0
         expand = True
 

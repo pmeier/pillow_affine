@@ -12,10 +12,7 @@ with open(path.join(here, "README.md"), "r") as fh:
 
 install_requires = ("pillow", "numpy")
 
-extras_require = {
-    # FIXME: move to a released version
-    "testing": ("pyimagetest@https://github.com/pmeier/pyimagetest/archive/master.zip",)
-}
+extras_require = {"testing": ("pyimagetest",)}
 
 classifiers = (
     "Development Status :: 3 - Beta",
