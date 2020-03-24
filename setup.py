@@ -24,7 +24,7 @@ test_requires = (
     "numpy",
 )
 
-dev_requires = (*type_check_requires, *test_requires)
+dev_requires = (*type_check_requires, *test_requires, "pre-commit")
 
 extras_require = {
     "type_check": type_check_requires,
