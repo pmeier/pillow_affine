@@ -10,7 +10,7 @@ with open(path.join(here, "pillow_affine", "__about__.py"), "r") as fh:
 with open(path.join(here, "README.md"), "r") as fh:
     long_description = fh.read()
 
-install_requires = ("pillow", "numpy")
+install_requires = ("pillow",)
 
 type_check_requires = (
     "mypy",
@@ -21,6 +21,7 @@ type_check_requires = (
 test_requires = (
     "pytest",
     "pyimagetest",
+    "numpy",
 )
 
 dev_requires = (*type_check_requires, *test_requires)

@@ -1,16 +1,14 @@
-from typing import Union, Optional, Tuple
+from typing import Union, Optional, Sequence, Tuple
 from abc import ABC, abstractmethod
+from math import floor, ceil
 from PIL import Image
-import numpy as np
 from .matrix import (
-    left_matmuls,
-    inv,
-    verify_matrix,
     shearing_matrix,
     rotation_matrix,
     scaling_matrix,
     translation_matrix,
 )
+from .utils import Coordinate, Matrix, left_matmuls, matinv, transform_coordinate
 
 __all__ = [
     "AffineTransform",
@@ -21,8 +19,10 @@ __all__ = [
     "ComposedTransform",
 ]
 
+Size = Tuple[int, int]
 
-def calculate_image_center(size: Tuple[int, int]) -> Tuple[float, float]:
+
+def calculate_image_center(size: Size) -> Coordinate:
     width, height = size
     horz_center = width / 2.0
     vert_center = height / 2.0
@@ -31,14 +31,13 @@ def calculate_image_center(size: Tuple[int, int]) -> Tuple[float, float]:
 
 class AffineTransform(ABC):
     @abstractmethod
-    def create_matrix(self, size: Tuple[int, int]) -> np.ndarray:
+    def create_matrix(self, size: Size) -> Matrix:
         pass
 
     def extract_transform_params(
-        self, size: Tuple[int, int], expand: bool = False
-    ) -> Tuple[Tuple[int, int], int, Tuple[int, int, int, int, int, int]]:
+        self, size: Size, expand: bool = False
+    ) -> Tuple[Size, int, Matrix]:
         transform_matrix = self.create_matrix(size)
-        verify_matrix(transform_matrix)
 
         if expand:
             expanded_size, transform_matrix = self._expand_canvas(
@@ -47,45 +46,40 @@ class AffineTransform(ABC):
         else:
             expanded_size = size
 
-        transform_matrix = self._coordinate_transform(size, transform_matrix)
+        transform_matrix = self._coordinate_system_transform(size, transform_matrix)
 
         data = self._extract_affine_data(transform_matrix)
 
         return expanded_size, Image.AFFINE, data
 
     @staticmethod
-    def _expand_canvas(
-        size: Tuple[int, int], transform_matrix: np.ndarray
-    ) -> Tuple[Tuple[int, int], np.ndarray]:
-        def calculate_motif_vertices(transform_matrix: np.ndarray) -> np.ndarray:
+    def _expand_canvas(size: Size, transform_matrix: Matrix) -> Tuple[Size, Matrix]:
+        def calculate_motif_vertices(transform_matrix: Matrix) -> Sequence[Coordinate]:
             width, height = size
-            image_vertices = np.array(
-                (
-                    # fmt:off
-                    (0.0, width,    0.0, width),
-                    (0.0,   0.0, height, height),
-                    # fmt:on
-                )
-            )
-            image_vertices = np.concatenate((image_vertices, np.ones((1, 4))))
-            return np.matmul(transform_matrix, image_vertices)[:-1, :]
+            image_vertices = ((0.0, 0.0), (width, 0.0), (0.0, height), (width, height))
+            return [
+                transform_coordinate(coordinate, transform_matrix)
+                for coordinate in image_vertices
+            ]
 
-        def calculate_expanded_size(motif_vertices: np.ndarray) -> Tuple[int, int]:
-            left_bottom_vertex = np.floor(np.min(motif_vertices, axis=1))
-            right_top_vertex = np.ceil(np.max(motif_vertices, axis=1))
-            expanded_size = right_top_vertex - left_bottom_vertex
-            expanded_width, expanded_height = expanded_size.astype(np.int)
+        def calculate_expanded_size(motif_vertices: Sequence[Coordinate]) -> Size:
+            xs, ys = zip(*motif_vertices)
+            left = floor(min(xs))
+            bottom = floor(min(ys))
+            right = ceil(max(xs))
+            top = ceil(max(ys))
+
+            expanded_width = right - left
+            expanded_height = top - bottom
             return expanded_width, expanded_height
 
-        def recenter_motif(
-            expanded_size: Tuple[int, int], transform_matrix: np.ndarray
-        ) -> np.ndarray:
+        def recenter_motif(expanded_size: Size, transform_matrix: Matrix) -> Matrix:
             matrix = left_matmuls(
                 translation_matrix(calculate_image_center(size), inverse=True),
                 translation_matrix(calculate_image_center(expanded_size)),
             )
             # TODO: Investigate and document why this extra step is needed
-            matrix = AffineTransform._coordinate_transform(size, matrix)
+            matrix = AffineTransform._coordinate_system_transform(size, matrix)
             return left_matmuls(transform_matrix, matrix)
 
         motif_vertices = calculate_motif_vertices(transform_matrix)
@@ -95,35 +89,29 @@ class AffineTransform(ABC):
         return expanded_size, transform_matrix
 
     @staticmethod
-    def _coordinate_transform(
-        size: Tuple[int, int], transform_matrix: np.ndarray
-    ) -> np.ndarray:
+    def _coordinate_system_transform(size: Size, transform_matrix: Matrix) -> Matrix:
         width, height = size
-        matrix = np.array(((1.0, 0.0, 0.0), (0.0, -1.0, height), (0.0, 0.0, 1.0)))
-        return left_matmuls(matrix, transform_matrix, inv(matrix))
+        matrix = (1.0, 0.0, 0.0, 0.0, -1.0, height)
+        return left_matmuls(matrix, transform_matrix, matinv(matrix))
 
     @staticmethod
-    def _extract_affine_data(
-        transform_matrix: np.ndarray,
-    ) -> Tuple[int, int, int, int, int, int]:
-        inv_transform_params = inv(transform_matrix)[:-1, :]
-        a, b, c, d, e, f = inv_transform_params.reshape(6)
-        return a, b, c, d, e, f
+    def _extract_affine_data(transform_matrix: Matrix) -> Matrix:
+        return matinv(transform_matrix)
 
     @staticmethod
-    def _transform_around_point(
-        point: Tuple[float, float], transform_matrix: np.ndarray
-    ) -> np.ndarray:
+    def _off_center_transform(
+        coordinate: Coordinate, transform_matrix: Matrix
+    ) -> Matrix:
         return left_matmuls(
-            translation_matrix(point, inverse=True),
+            translation_matrix(coordinate, inverse=True),
             transform_matrix,
-            translation_matrix(point, inverse=False),
+            translation_matrix(coordinate, inverse=False),
         )
 
 
 class ElementaryTransform(AffineTransform):
     @abstractmethod
-    def create_matrix(self, size: Tuple[int, int]) -> np.ndarray:
+    def create_matrix(self, size: Size) -> Matrix:
         pass
 
     def __repr__(self) -> str:
@@ -138,19 +126,19 @@ class Shear(ElementaryTransform):
         self,
         angle: float,
         clockwise: bool = False,
-        center: Optional[Tuple[float, float]] = None,
+        center: Optional[Coordinate] = None,
     ):
         self.angle = angle % 360.0
         self.clockwise = clockwise
         self.center = center
 
-    def create_matrix(self, size: Tuple[int, int]) -> np.ndarray:
+    def create_matrix(self, size: Size) -> Matrix:
         matrix = shearing_matrix(self.angle, clockwise=self.clockwise)
         if self.center is None:
             center = calculate_image_center(size)
         else:
             center = self.center
-        matrix = self._transform_around_point(center, matrix)
+        matrix = self._off_center_transform(center, matrix)
         return matrix
 
     def extra_repr(self) -> str:
@@ -167,19 +155,19 @@ class Rotate(ElementaryTransform):
         self,
         angle: float,
         clockwise: bool = False,
-        center: Optional[Tuple[float, float]] = None,
+        center: Optional[Coordinate] = None,
     ):
         self.angle = angle % 360.0
         self.clockwise = clockwise
         self.center = center
 
-    def create_matrix(self, size: Tuple[int, int]) -> np.ndarray:
+    def create_matrix(self, size: Size) -> Matrix:
         matrix = rotation_matrix(self.angle, clockwise=self.clockwise)
         if self.center is None:
             center = calculate_image_center(size)
         else:
             center = self.center
-        matrix = self._transform_around_point(center, matrix)
+        matrix = self._off_center_transform(center, matrix)
         return matrix
 
     def extra_repr(self) -> str:
@@ -195,18 +183,18 @@ class Scale(ElementaryTransform):
     def __init__(
         self,
         factor: Union[float, Tuple[float, float]],
-        center: Optional[Tuple[float, float]] = None,
+        center: Optional[Coordinate] = None,
     ):
         self.factor = factor
         self.center = center
 
-    def create_matrix(self, size: Tuple[int, int]) -> np.ndarray:
+    def create_matrix(self, size: Size) -> Matrix:
         matrix = scaling_matrix(self.factor)
         if self.center is None:
             center = calculate_image_center(size)
         else:
             center = self.center
-        matrix = self._transform_around_point(center, matrix)
+        matrix = self._off_center_transform(center, matrix)
         return matrix
 
     def extra_repr(self) -> str:
@@ -227,11 +215,11 @@ class Scale(ElementaryTransform):
 
 
 class Translate(ElementaryTransform):
-    def __init__(self, translation: Tuple[float, float], inverse: bool = False) -> None:
+    def __init__(self, translation: Coordinate, inverse: bool = False) -> None:
         self.translation = translation
         self.inverse = inverse
 
-    def create_matrix(self, size: Tuple[int, int]) -> np.ndarray:
+    def create_matrix(self, size: Size) -> Matrix:
         return translation_matrix(self.translation, inverse=self.inverse)
 
     def extra_repr(self) -> str:
@@ -248,7 +236,7 @@ class ComposedTransform(AffineTransform):
             raise RuntimeError(msg)
         self.transforms = transforms
 
-    def create_matrix(self, size: Tuple[int, int]) -> np.ndarray:
+    def create_matrix(self, size: Size) -> Matrix:
         return left_matmuls(
             *[transform.create_matrix(size) for transform in self.transforms]
         )
