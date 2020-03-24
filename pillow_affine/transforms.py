@@ -23,6 +23,14 @@ Size = Tuple[int, int]
 
 
 def calculate_image_center(size: Size) -> Coordinate:
+    """Calculates the center of an image
+
+    Args:
+        size: Image size (width, height)
+
+    Returns:
+        Image center
+    """
     width, height = size
     horz_center = width / 2.0
     vert_center = height / 2.0
@@ -30,14 +38,44 @@ def calculate_image_center(size: Size) -> Coordinate:
 
 
 class AffineTransform(ABC):
+    """ABC for all affine transformations.
+    """
+
     @abstractmethod
-    def create_matrix(self, size: Size) -> Matrix:
+    def _create_matrix(self, size: Size) -> Matrix:
         pass
 
     def extract_transform_params(
         self, size: Size, expand: bool = False
     ) -> Tuple[Size, int, Matrix]:
-        transform_matrix = self.create_matrix(size)
+        """Extracts the transformation parameters that need to be passed to
+        `Image.transform() <https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.transform>`_
+        for the affine transformation. An simple call might look like::
+
+            from PIL import Image
+            from pillow_affine import transforms
+
+
+            image = Image.open(...)
+            transform = transforms.Rotate(30.0)
+
+            transform_params = transform.extract_transform_params(image.size)
+            transformed_image = image.transform(*transform_params)
+
+        Args:
+            size: Image size (width, height)
+            expand: If ``True``, expands the canvas to hold the complete
+                transformed motif. Defaults to ``False``.
+
+        .. note::
+            If you use the ``expand`` flag the motif is centered on the canvas
+            and thus any final translation is removed.
+
+        Returns:
+            ``size``, ``method``, and ``data`` parameters for
+            `Image.transform() <https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.transform>`_
+        """
+        transform_matrix = self._create_matrix(size)
 
         if expand:
             expanded_size, transform_matrix = self._expand_canvas(
@@ -111,17 +149,27 @@ class AffineTransform(ABC):
 
 class ElementaryTransform(AffineTransform):
     @abstractmethod
-    def create_matrix(self, size: Size) -> Matrix:
+    def _create_matrix(self, size: Size) -> Matrix:
         pass
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.extra_repr()})"
+        return f"{self.__class__.__name__}({self._extra_repr()})"
 
-    def extra_repr(self) -> str:
+    def _extra_repr(self) -> str:
         return ""
 
 
 class Shear(ElementaryTransform):
+    """Affine horizontal shearing transformation.
+
+    Args:
+        angle: Shearing angle in degrees.
+        clockwise: If ``True``, the shearing will be performed clockwise.
+            Defaults to ``False``.
+        center: Optional center of the shearing. Defaults to the center of
+            the image.
+    """
+
     def __init__(
         self,
         angle: float,
@@ -132,7 +180,7 @@ class Shear(ElementaryTransform):
         self.clockwise = clockwise
         self.center = center
 
-    def create_matrix(self, size: Size) -> Matrix:
+    def _create_matrix(self, size: Size) -> Matrix:
         matrix = shearing_matrix(self.angle, clockwise=self.clockwise)
         if self.center is None:
             center = calculate_image_center(size)
@@ -141,7 +189,7 @@ class Shear(ElementaryTransform):
         matrix = self._off_center_transform(center, matrix)
         return matrix
 
-    def extra_repr(self) -> str:
+    def _extra_repr(self) -> str:
         extras = [f"{self.angle:4.1f}°"]
         if self.clockwise:
             extras.append(f"clockwise={self.clockwise}")
@@ -151,6 +199,16 @@ class Shear(ElementaryTransform):
 
 
 class Rotate(ElementaryTransform):
+    """Affine rotation transformation.
+
+    Args:
+        angle: Rotation angle in degrees.
+        clockwise: If ``True``, the rotation will be performed clockwise.
+            Defaults to ``False``.
+        center: Optional center of the rotation. Defaults to the center of the
+            image.
+    """
+
     def __init__(
         self,
         angle: float,
@@ -161,7 +219,7 @@ class Rotate(ElementaryTransform):
         self.clockwise = clockwise
         self.center = center
 
-    def create_matrix(self, size: Size) -> Matrix:
+    def _create_matrix(self, size: Size) -> Matrix:
         matrix = rotation_matrix(self.angle, clockwise=self.clockwise)
         if self.center is None:
             center = calculate_image_center(size)
@@ -170,7 +228,7 @@ class Rotate(ElementaryTransform):
         matrix = self._off_center_transform(center, matrix)
         return matrix
 
-    def extra_repr(self) -> str:
+    def _extra_repr(self) -> str:
         extras = [f"{self.angle:4.1f}°"]
         if self.clockwise:
             extras.append(f"clockwise={self.clockwise}")
@@ -180,6 +238,15 @@ class Rotate(ElementaryTransform):
 
 
 class Scale(ElementaryTransform):
+    """Affine scaling transformation
+
+    Args:
+        factor: Horizontal and vertical scaling factors. If scalar, the
+            same factor is used for both directions.
+        center: Optional center of the scaling. Defaults to the center of
+            the image.
+    """
+
     def __init__(
         self,
         factor: Union[float, Tuple[float, float]],
@@ -188,7 +255,7 @@ class Scale(ElementaryTransform):
         self.factor = factor
         self.center = center
 
-    def create_matrix(self, size: Size) -> Matrix:
+    def _create_matrix(self, size: Size) -> Matrix:
         matrix = scaling_matrix(self.factor)
         if self.center is None:
             center = calculate_image_center(size)
@@ -197,7 +264,7 @@ class Scale(ElementaryTransform):
         matrix = self._off_center_transform(center, matrix)
         return matrix
 
-    def extra_repr(self) -> str:
+    def _extra_repr(self) -> str:
         def format_factor(factor: float) -> str:
             return f"{factor:.2f}"
 
@@ -215,14 +282,22 @@ class Scale(ElementaryTransform):
 
 
 class Translate(ElementaryTransform):
+    """Affine translation transformation
+
+    Args:
+        translation: Horizontal and vertical translation.
+        inverse: If ``True``, the translation will be performed in the
+            opposite direction. Defaults to ``False``.
+    """
+
     def __init__(self, translation: Coordinate, inverse: bool = False) -> None:
         self.translation = translation
         self.inverse = inverse
 
-    def create_matrix(self, size: Size) -> Matrix:
+    def _create_matrix(self, size: Size) -> Matrix:
         return translation_matrix(self.translation, inverse=self.inverse)
 
-    def extra_repr(self) -> str:
+    def _extra_repr(self) -> str:
         extras = [f"{tuple([round(coord, 1) for coord in self.translation])}"]
         if self.inverse:
             extras.append(f"inverse={self.inverse}")
@@ -230,15 +305,33 @@ class Translate(ElementaryTransform):
 
 
 class ComposedTransform(AffineTransform):
+    """Composed affine transformation by chaining multiple
+    :class:`AffineTransform` s together. An simple example might look like::
+
+        from PIL import Image
+        from pillow_affine import transforms
+
+        image = Image.open(...)
+        transform = transforms.ComposedTransform(
+            transforms.Rotate(30.0), transforms.Translate((50.0, 100.0))
+        )
+
+        transform_params = transform.extract_transform_params(image.size)
+        transformed_image = image.transform(*transform_params)
+
+    Args:
+        transforms: Individual :class:`AffineTransform` s
+    """
+
     def __init__(self, *transforms: AffineTransform) -> None:
         if len(transforms) == 0:
             msg = "A ComposedTransform must comprise at least one other transform."
             raise RuntimeError(msg)
         self.transforms = transforms
 
-    def create_matrix(self, size: Size) -> Matrix:
+    def _create_matrix(self, size: Size) -> Matrix:
         return left_matmuls(
-            *[transform.create_matrix(size) for transform in self.transforms]
+            *[transform._create_matrix(size) for transform in self.transforms]
         )
 
     def __repr__(self) -> str:

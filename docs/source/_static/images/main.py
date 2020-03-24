@@ -3,22 +3,14 @@ from urllib.request import urlretrieve
 from PIL import Image
 from pillow_affine import Shear, Rotate, Scale, Translate, ComposedTransform
 
-WIDTH = 280
-
 
 def download_and_resize_raw_image(url, root):
     def download(file):
         urlretrieve(url, file)
         return Image.open(file)
 
-    def resize(image):
-        raw_width, raw_height = image.size
-        aspect_ratio = raw_width / raw_height
-        height = round(WIDTH / aspect_ratio)
-        return image.resize((WIDTH, height), Image.BILINEAR)
-
     file = path.join(root, "raw.png")
-    image = resize(download(file))
+    image = download(file)
     image.save(file)
     return image
 
@@ -85,12 +77,12 @@ def create_scale_images(image):
 
 def create_translate_images(image):
     file = "translate.png"
-    transform = Translate((50.0, 20.0))
+    transform = Translate((150.0, 50.0))
     transform_params = transform.extract_transform_params(image.size)
     image.transform(*transform_params).save(file)
 
     file = "translate_inverse.png"
-    transform = Translate((50.0, 20.0), inverse=True)
+    transform = Translate((150.0, 50.0), inverse=True)
     transform_params = transform.extract_transform_params(image.size)
     image.transform(*transform_params).save(file)
 
@@ -103,7 +95,7 @@ def create_composed_transform_images(image):
 
     file = "composed_2.png"
     transform = ComposedTransform(
-        Scale((0.3, 0.7)), Rotate(70.0, clockwise=True), Translate((50.0, 20.0))
+        Scale((0.3, 0.7)), Rotate(70.0, clockwise=True), Translate((150.0, 50.0))
     )
     transform_params = transform.extract_transform_params(image.size)
     image.transform(*transform_params).save(file)

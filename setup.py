@@ -24,11 +24,18 @@ test_requires = (
     "numpy",
 )
 
-dev_requires = (*type_check_requires, *test_requires, "pre-commit")
+doc_requires = (
+    "sphinx",
+    "sphinx_autodoc_typehints",
+    "sphinx_rtd_theme",
+)
+
+dev_requires = (*type_check_requires, *test_requires, *doc_requires)
 
 extras_require = {
     "type_check": type_check_requires,
     "test": test_requires,
+    "doc": doc_requires,
     "dev": dev_requires,
 }
 

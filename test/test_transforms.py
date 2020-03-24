@@ -29,7 +29,7 @@ def convert_translation(
 class Tester(ImageTestCase):
     def default_image_file(self) -> str:
         here = path.abspath(path.dirname(__file__))
-        return path.join(here, "..", "images", "raw.png")
+        return path.join(here, "..", "docs", "source", "_static", "images", "raw.png")
 
     def default_image_backend(self):
         return "PIL"
