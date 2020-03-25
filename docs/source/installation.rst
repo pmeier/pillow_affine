@@ -21,7 +21,7 @@ To install the latest unreleased version from source run
 Installation for developers
 ---------------------------
 
-If you want to contribute to ``pyimagetest`` please install from source with the
+If you want to contribute to ``pillow_affine`` please install from source with the
 ``[dev]`` extra in order to install all required development tools.
 
 .. code-block:: sh
@@ -29,3 +29,12 @@ If you want to contribute to ``pyimagetest`` please install from source with the
   git clone https://github.com/pmeier/pyimagetest
   cd pyimagetest
   pip install .[dev]
+
+
+Since ``pillow_affine`` uses the 
+`black code formatter <https://github.com/psf/black>`_, you should install it as
+a pre-commit hook:
+
+.. code-block:: sh
+
+  pre-commit install
